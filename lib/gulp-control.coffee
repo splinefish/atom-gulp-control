@@ -1,28 +1,59 @@
 GulpControlView = require './gulp-control-view'
 {CompositeDisposable} = require 'atom'
 
-views = []
-
 module.exports = GulpControl =
-  activate: (state) ->
-    console.log 'GulpControl: activate'
+  modalPanel: null
+  gulpView: null
 
-    atom.workspaceView.command "gulp-control:toggle", => @newView()
+  activate: (state) ->
+    atom.workspaceView.command "gulp-control:toggle", => @toggle()
+
+    this.newView()
+
+    # Setup status bar icon
+    # TODO: Fix this to whatever the new way is for adding a element to the statusbar
+    #       since this throws a deprecated warning.
+    # TODO: Replace GULP text with a image
+    # TODO: Show some kind of mark if a task is running
+    # TODO: If we have a watch running and hide the window, they show it again
+    #       the text is no longer updating.
+    @statusBar = atom.workspaceView.statusBar
+
+    if @statusBar?
+      # TODO: Create a view class for this
+      @statusBarTile = document.createElement('div')
+      @statusBarTile.textContent = "GULP"
+      @statusBarTile.classList.add('inline-block')
+
+      instance = this
+
+      @statusBarTile.onclick = ->
+        instance.toggle()
+
+      @statusBar.appendRight(@statusBarTile)
+
     return
 
   deactivate: ->
     console.log 'GulpControl: deactivate'
+    @modalPanel.destroy()
+    @gulpView.destroy()
+    @statusBarTile?.destroy()
+    @statusBarTile = null
     return
 
   newView: ->
-    console.log 'GulpControl: toggle'
+    @gulpView = new GulpControlView()
+    @modalPanel = atom.workspace.addBottomPanel(item: @gulpView.getElement(), visible: true)
 
-    view = new GulpControlView()
-    views.push view
-
-    pane = atom.workspace.getActivePane()
-    item = pane.addItem view, 0
-    pane.activateItem item
     return
+
+  toggle: ->
+    if @modalPanel.isVisible()
+      @modalPanel.hide()
+    else
+      @modalPanel.show()
+      @gulpView.clearGulpTasks()
+      @gulpView.getGulpTasks()
 
   serialize: ->

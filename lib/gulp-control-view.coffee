@@ -13,6 +13,8 @@ class GulpControlView extends View
       @ul class: 'tasks', outlet: 'taskList'
       @div class: 'output', outlet: 'outputPane'
 
+      # TODO: Add a kill button
+
   serialize: ->
 
   initialize: ->
@@ -60,6 +62,10 @@ class GulpControlView extends View
         return found
 
     return
+
+  clearGulpTasks: ->
+    console.log('clearing tasklist', @taskList)
+    @taskList.empty()
 
   getGulpTasks: ->
     @tasks = []
@@ -142,3 +148,6 @@ class GulpControlView extends View
     @writeOutput "Exited with code #{code}", "#{if code then 'error' else ''}"
     @process = null
     return
+
+  getElement: ->
+    return @element
