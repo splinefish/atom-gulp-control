@@ -11,24 +11,28 @@ module.exports = GulpControl =
     this.newView()
 
     # Setup status bar icon
-    # TODO: Fix this to whatever the new way is for adding a element to the statusbar
-    #       since this throws a deprecated warning.
-    # TODO: Replace GULP text with a image
-    # TODO: Show some kind of mark if a task is running
-    # TODO: If we have a watch running and hide the window, they show it again
-    #       the text is no longer updating.
+    # FIXME: To whatever the new way is for adding a element to the statusbar
+    #        since this throws a deprecated warning.
+    # TODO: Show some kind of mark on the icon if a task is running
     @statusBar = atom.workspaceView.statusBar
 
     if @statusBar?
       # TODO: Create a view class for this
       @statusBarTile = document.createElement('div')
-      @statusBarTile.textContent = "GULP"
       @statusBarTile.classList.add('inline-block')
 
-      instance = this
+      @tileIcon = document.createElement('span')
+      #@tileIcon.classList.add('icon', 'icon-gulp-gray-16px')
+      @tileIcon.classList.add('icon', 'icon-terminal')
+      @statusBarTile.appendChild(@tileIcon)
+      # icon-terminal
 
-      @statusBarTile.onclick = ->
-        instance.toggle()
+      @tileText = document.createElement('span')
+      @tileText.textContent = "GULP"
+      @statusBarTile.appendChild(@tileText)
+
+      @statusBarTile.onclick = =>
+        this.toggle()
 
       @statusBar.appendRight(@statusBarTile)
 
@@ -43,6 +47,7 @@ module.exports = GulpControl =
     return
 
   newView: ->
+    console.log 'gulp-control Creating a new view'
     @gulpView = new GulpControlView()
     @modalPanel = atom.workspace.addBottomPanel(item: @gulpView.getElement(), visible: true)
 
@@ -53,7 +58,11 @@ module.exports = GulpControl =
       @modalPanel.hide()
     else
       @modalPanel.show()
-      @gulpView.clearGulpTasks()
-      @gulpView.getGulpTasks()
+      @gulpView.scrollToBottom()
+      #@gulpView.clearGulpTasks()
+      #@gulpView.getGulpTasks() this is what kills our process
+      # We need to create a new bufferedprocess to get the tasks. We might
+      # also want to put a right click context menu or something for refetching
+      # instead of every time we open the window.
 
   serialize: ->

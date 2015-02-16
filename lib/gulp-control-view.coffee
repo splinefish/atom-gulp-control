@@ -10,15 +10,20 @@ module.exports =
 class GulpControlView extends View
   @content: ->
     @div class: 'gulp-control', =>
-      @ul class: 'tasks', outlet: 'taskList'
+      @div class: 'tasks-container', =>
+        @ul class: 'tasks', outlet: 'taskList'
+        @div class: 'btn btn-default icon icon-link-external', outlet: 'killButton'
       @div class: 'output', outlet: 'outputPane'
-
-      # TODO: Add a kill button
 
   serialize: ->
 
   initialize: ->
     console.log 'GulpControlView: initialize'
+
+    @killButton.text 'Cancel Task'
+    @killButton.click =>
+      console.log @process
+      this.killCurrentTask()
 
     unless atom.project.getPath()
       @writeOutput 'No project path found, aborting', 'error'
@@ -34,10 +39,7 @@ class GulpControlView extends View
 
   destroy: ->
     console.log 'GulpControlView: destroy'
-
-    if @process
-      @process.kill()
-      @process = null
+    this.killCurrentTask()
     @detach()
     return
 
@@ -94,13 +96,19 @@ class GulpControlView extends View
         @gulpExit(code)
         console.error 'GulpControl: getGulpTasks, exit', code
 
+      @process = null
+
     @runGulp '--tasks-simple', onOutput, onError, onExit
     return
 
-  runGulp: (task, stdout, stderr, exit) ->
+  killCurrentTask: ->
     if @process
       @process.kill()
       @process = null
+      @writeOutput 'Task terminated.'
+
+  runGulp: (task, stdout, stderr, exit) ->
+    this.killCurrentTask()
 
     command = 'gulp'
     args = [task, '--color']
@@ -132,6 +140,9 @@ class GulpControlView extends View
       @outputPane.append "<pre class='#{klass or ''}'>#{line}</pre>"
       @outputPane.scrollToBottom()
     return
+
+  scrollToBottom: ->
+    @outputPane.scrollToBottom()
 
   gulpOut: (output) ->
     for line in output.split('\n')
