@@ -18,11 +18,8 @@ class GulpControlView extends View
   serialize: ->
 
   initialize: ->
-    console.log 'GulpControlView: initialize'
-
     @killButton.text 'Cancel Task'
     @killButton.click =>
-      console.log @process
       this.killCurrentTask()
 
     unless atom.project.getPath()
@@ -38,7 +35,6 @@ class GulpControlView extends View
     return
 
   destroy: ->
-    console.log 'GulpControlView: destroy'
     this.killCurrentTask()
     @detach()
     return
@@ -66,7 +62,6 @@ class GulpControlView extends View
     return
 
   clearGulpTasks: ->
-    console.log('clearing tasklist', @taskList)
     @taskList.empty()
 
   getGulpTasks: ->

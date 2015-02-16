@@ -3,9 +3,6 @@
   "main": "./lib/gulp-control",
   "version": "0.3.3",
   "description": "Modified version of gulp-control. Displays a list of gulp tasks and allows execution within Atom",
-  "activationCommands": {
-    "atom-workspace": "gulp-control:toggle"
-  },
   "repository": "https://github.com/splinefish/atom-gulp-control",
   "license": "MIT",
   "engines": {

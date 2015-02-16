@@ -6,20 +6,19 @@ module.exports = GulpControl =
   gulpView: null
 
   activate: (state) ->
-    atom.workspaceView.command "gulp-control:toggle", => @toggle()
-
-    this.newView()
-
-    # Setup status bar icon
     # FIXME: To whatever the new way is for adding a element to the statusbar
     #        since this throws a deprecated warning.
     # TODO: Show some kind of mark on the icon if a task is running
-    @statusBar = atom.workspaceView.statusBar
+    # TODO: Dont start if the main folder does not contain a gulpfile.js|coffee
+    #       Hook into some createfile event and check if the type is a gulpfile
+    #       in that case, show up on the statusbar
 
-    if @statusBar?
+    createStatusEntry = =>
+      @statusBar = atom.workspaceView.statusBar
+
       # TODO: Create a view class for this
       @statusBarTile = document.createElement('div')
-      @statusBarTile.classList.add('inline-block')
+      @statusBarTile.classList.add('inline-block', 'gulp-control-status-tile')
 
       @tileIcon = document.createElement('span')
       #@tileIcon.classList.add('icon', 'icon-gulp-gray-16px')
@@ -32,14 +31,22 @@ module.exports = GulpControl =
       @statusBarTile.appendChild(@tileText)
 
       @statusBarTile.onclick = =>
+        if !@gulpView
+          this.newView()
+
         this.toggle()
 
       @statusBar.appendRight(@statusBarTile)
 
+    if atom.workspaceView.statusBar
+      createStatusEntry()
+    else
+      atom.packages.once 'activated', ->
+        createStatusEntry()
+
     return
 
   deactivate: ->
-    console.log 'GulpControl: deactivate'
     @modalPanel.destroy()
     @gulpView.destroy()
     @statusBarTile?.destroy()
@@ -47,9 +54,8 @@ module.exports = GulpControl =
     return
 
   newView: ->
-    console.log 'gulp-control Creating a new view'
     @gulpView = new GulpControlView()
-    @modalPanel = atom.workspace.addBottomPanel(item: @gulpView.getElement(), visible: true)
+    @modalPanel = atom.workspace.addBottomPanel(item: @gulpView.getElement(), visible: false)
 
     return
 
